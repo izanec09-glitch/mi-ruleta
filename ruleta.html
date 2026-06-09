@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎡 Ruleta - 45% Verde, 40% Amarillo, 15% Rojo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #1a1a1a;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { margin: 20px 0; }
+    canvas {
+      border: 8px solid #ddd;
+      border-radius: 50%;
+      box-shadow: 0 0 30px rgba(255,255,255,0.3);
+    }
+    button {
+      margin-top: 20px;
+      padding: 15px 40px;
+      font-size: 24px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+    button:hover { background: #ff6666; }
+    #resultado {
+      margin-top: 20px;
+      font-size: 28px;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎡 Ruleta de la Suerte</h1>
+  <canvas id="wheel" width="500" height="500"></canvas>
+  <br>
+  <button onclick="spin()">¡GIRAR RULETA!</button>
+  <div id="resultado"></div>
+
+  <script>
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const centerX = 250;
+    const centerY = 250;
+    const radius = 220;
+
+    const segments = [
+      { color: '#22c55e', label: 'VERDE', prob: 0.45 },
+      { color: '#eab308', label: 'AMARILLO', prob: 0.40 },
+      { color: '#ef4444', label: 'ROJO', prob: 0.15 }
+    ];
+
+    let rotation = 0;
+    let isSpinning = false;
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let startAngle = rotation;
+
+      segments.forEach((seg, i) => {
+        const angle = 2 * Math.PI * seg.prob;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + angle);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Texto
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + angle / 2);
+        ctx.textAlign = "center";
+        ctx.fillStyle = "white";
+        ctx.font = "bold 28px Arial";
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 5;
+        ctx.fillText(seg.label, radius * 0.6, 10);
+        ctx.restore();
+
+        startAngle += angle;
+      });
+
+      // Flecha superior
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.moveTo(centerX - 20, 60);
+      ctx.lineTo(centerX + 20, 60);
+      ctx.lineTo(centerX, 20);
+      ctx.fill();
+    }
+
+    function spin() {
+      if (isSpinning) return;
+      isSpinning = true;
+      document.getElementById('resultado').textContent = '';
+
+      const spinDuration = 4000 + Math.random() * 2000;
+      const totalRotation = rotation + 10 * Math.PI + Math.random() * 4 * Math.PI;
+
+      let startTime = null;
+
+      function animate(time) {
+        if (!startTime) startTime = time;
+        const progress = Math.min((time - startTime) / spinDuration, 1);
+        
+        // Easing suave
+        const eased = 1 - Math.pow(1 - progress, 4);
+        rotation = totalRotation * eased;
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          showResult();
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function showResult() {
+      // Calcular resultado según probabilidades
+      const rand = Math.random();
+      let result;
+      
+      if (rand < 0.45) result = { label: "VERDE", color: "#22c55e" };
+      else if (rand < 0.85) result = { label: "AMARILLO", color: "#eab308" };
+      else result = { label: "ROJO", color: "#ef4444" };
+
+      const resDiv = document.getElementById('resultado');
+      resDiv.style.color = result.color;
+      resDiv.textContent = `🎉 ¡${result.label}!`;
+    }
+
+    // Dibujar al cargar
+    drawWheel();
+  </script>
+</body>
+</html>
