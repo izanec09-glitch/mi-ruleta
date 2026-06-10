@@ -3,58 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎡 Ruleta - 45% Verde, 40% Amarillo, 15% Rojo</title>
+  <title>Ruleta</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #1a1a1a;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
       color: white;
       margin: 0;
       padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    h1 { margin: 20px 0; }
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px rgba(255,255,255,0.4);
+    }
     canvas {
-      border: 8px solid #ddd;
+      border: 15px solid #ffffff22;
       border-radius: 50%;
-      box-shadow: 0 0 30px rgba(255,255,255,0.3);
+      box-shadow: 0 0 60px rgba(0,0,0,0.7),
+                  inset 0 0 50px rgba(255,255,255,0.15);
+      background: #000;
     }
     button {
-      margin-top: 20px;
-      padding: 15px 40px;
-      font-size: 24px;
-      background: #ff4444;
+      margin-top: 40px;
+      padding: 18px 60px;
+      font-size: 28px;
+      font-weight: bold;
+      background: linear-gradient(45deg, #ff3366, #ff6699);
       color: white;
       border: none;
       border-radius: 50px;
       cursor: pointer;
+      box-shadow: 0 10px 35px rgba(255, 51, 102, 0.5);
+      transition: all 0.3s;
     }
-    button:hover { background: #ff6666; }
-    #resultado {
-      margin-top: 20px;
-      font-size: 28px;
-      min-height: 40px;
+    button:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 15px 45px rgba(255, 51, 102, 0.7);
     }
   </style>
 </head>
 <body>
-  <h1>🎡 Ruleta de la Suerte</h1>
-  <canvas id="wheel" width="500" height="500"></canvas>
-  <br>
-  <button onclick="spin()">¡GIRAR RULETA!</button>
-  <div id="resultado"></div>
+  <h1>🎡 Ruleta</h1>
+  <canvas id="wheel" width="560" height="560"></canvas>
+  <button onclick="spin()">¡GIRAR!</button>
 
   <script>
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
-    const centerX = 250;
-    const centerY = 250;
-    const radius = 220;
+    const centerX = 280;
+    const centerY = 280;
+    const radius = 250;
 
     const segments = [
-      { color: '#22c55e', label: 'VERDE', prob: 0.45 },
-      { color: '#eab308', label: 'AMARILLO', prob: 0.40 },
-      { color: '#ef4444', label: 'ROJO', prob: 0.15 }
+      { color: '#22c55e', prob: 0.45 },   // Verde 45%
+      { color: '#eab308', prob: 0.35 },   // Amarillo 35%
+      { color: '#ef4444', prob: 0.20 }    // Rojo 20%
     ];
 
     let rotation = 0;
@@ -64,87 +74,75 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       let startAngle = rotation;
 
-      segments.forEach((seg, i) => {
+      segments.forEach((seg) => {
         const angle = 2 * Math.PI * seg.prob;
+        
+        const grad = ctx.createRadialGradient(centerX*0.95, centerY*0.95, radius*0.3, centerX, centerY, radius);
+        grad.addColorStop(0, seg.color);
+        grad.addColorStop(1, '#111');
+
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, startAngle + angle);
         ctx.closePath();
-        ctx.fillStyle = seg.color;
+        ctx.fillStyle = grad;
         ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
-        ctx.stroke();
 
-        // Texto
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(startAngle + angle / 2);
-        ctx.textAlign = "center";
-        ctx.fillStyle = "white";
-        ctx.font = "bold 28px Arial";
-        ctx.shadowColor = "black";
-        ctx.shadowBlur = 5;
-        ctx.fillText(seg.label, radius * 0.6, 10);
-        ctx.restore();
+        ctx.strokeStyle = '#ffffff44';
+        ctx.lineWidth = 8;
+        ctx.stroke();
 
         startAngle += angle;
       });
 
-      // Flecha superior
-      ctx.fillStyle = '#000';
+      // Centro
       ctx.beginPath();
-      ctx.moveTo(centerX - 20, 60);
-      ctx.lineTo(centerX + 20, 60);
-      ctx.lineTo(centerX, 20);
+      ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
+      ctx.fillStyle = '#111';
       ctx.fill();
+      ctx.strokeStyle = '#ddd';
+      ctx.lineWidth = 10;
+      ctx.stroke();
+
+      // Flecha
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 30, 75);
+      ctx.lineTo(centerX + 30, 75);
+      ctx.lineTo(centerX, 20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
     }
 
     function spin() {
       if (isSpinning) return;
       isSpinning = true;
-      document.getElementById('resultado').textContent = '';
 
-      const spinDuration = 4000 + Math.random() * 2000;
-      const totalRotation = rotation + 10 * Math.PI + Math.random() * 4 * Math.PI;
+      const spinTime = 5000 + Math.random() * 2000;
+      const totalRot = rotation + (Math.random() * 5 + 10) * Math.PI;
 
-      let startTime = null;
+      let start = null;
 
-      function animate(time) {
-        if (!startTime) startTime = time;
-        const progress = Math.min((time - startTime) / spinDuration, 1);
-        
-        // Easing suave
-        const eased = 1 - Math.pow(1 - progress, 4);
-        rotation = totalRotation * eased;
+      function animate(t) {
+        if (!start) start = t;
+        const progress = Math.min((t - start) / spinTime, 1);
+        const ease = 1 - Math.pow(1 - progress, 4);
 
+        rotation = totalRot * ease;
         drawWheel();
 
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
           isSpinning = false;
-          showResult();
         }
       }
       requestAnimationFrame(animate);
     }
 
-    function showResult() {
-      // Calcular resultado según probabilidades
-      const rand = Math.random();
-      let result;
-      
-      if (rand < 0.45) result = { label: "VERDE", color: "#22c55e" };
-      else if (rand < 0.85) result = { label: "AMARILLO", color: "#eab308" };
-      else result = { label: "ROJO", color: "#ef4444" };
-
-      const resDiv = document.getElementById('resultado');
-      resDiv.style.color = result.color;
-      resDiv.textContent = `🎉 ¡${result.label}!`;
-    }
-
-    // Dibujar al cargar
     drawWheel();
   </script>
 </body>
