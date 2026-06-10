@@ -5,45 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Ruleta</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
       background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
       color: white;
-      margin: 0;
-      padding: 15px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 10px;
       overflow: hidden;
     }
     h1 {
-      font-size: 2.2em;
-      margin: 10px 0 20px;
-      text-shadow: 0 0 20px rgba(255,255,255,0.4);
+      font-size: 2.1em;
+      margin-bottom: 15px;
+      text-shadow: 0 0 15px rgba(255,255,255,0.4);
     }
-    .container {
+    .game {
       width: 100%;
-      max-width: 560px;
+      max-width: 520px;
       margin: 0 auto;
     }
     canvas {
-      width: 100%;
-      height: auto;
-      max-width: 520px;
+      width: 100% !important;
+      height: auto !important;
       border: 12px solid #ffffff22;
       border-radius: 50%;
-      box-shadow: 0 0 50px rgba(0,0,0,0.7),
-                  inset 0 0 40px rgba(255,255,255,0.15);
+      box-shadow: 0 0 50px rgba(0,0,0,0.8),
+                  inset 0 0 40px rgba(255,255,255,0.1);
+      display: block;
       background: #000;
-      touch-action: none;
     }
     button {
-      margin-top: 30px;
-      padding: 18px 50px;
-      font-size: 1.8rem;
+      margin-top: 25px;
+      padding: 18px 40px;
+      font-size: 1.9rem;
       font-weight: bold;
       background: linear-gradient(45deg, #ff3366, #ff6699);
       color: white;
@@ -55,12 +57,12 @@
       max-width: 320px;
     }
     button:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="game">
     <h1>🎡 Ruleta</h1>
     <canvas id="wheel" width="520" height="520"></canvas>
     <button onclick="spin()">¡GIRAR!</button>
@@ -69,46 +71,49 @@
   <script>
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
-    let size = 520;
-    let centerX = size / 2;
-    let centerY = size / 2;
-    let radius = size / 2 - 20;
-
-    const segments = [
-      { color: '#22c55e', prob: 0.45 },   // Verde 45%
-      { color: '#eab308', prob: 0.35 },   // Amarillo 35%
-      { color: '#ef4444', prob: 0.20 }    // Rojo 20%
-    ];
-
+    
     let rotation = 0;
     let isSpinning = false;
 
+    const segments = [
+      { color: '#22c55e', prob: 0.45 },
+      { color: '#eab308', prob: 0.35 },
+      { color: '#ef4444', prob: 0.20 }
+    ];
+
     function resizeCanvas() {
-      const containerWidth = Math.min(window.innerWidth * 0.92, 520);
-      canvas.style.width = containerWidth + 'px';
-      canvas.style.height = containerWidth + 'px';
+      const maxSize = Math.min(window.innerWidth * 0.92, window.innerHeight * 0.65, 520);
+      canvas.width = maxSize;
+      canvas.height = maxSize;
+      
+      // Redibujar después de cambiar tamaño
+      drawWheel();
     }
 
     function drawWheel() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const size = canvas.width;
+      const center = size / 2;
+      const radius = center - 25;
+
+      ctx.clearRect(0, 0, size, size);
       let startAngle = rotation;
 
       segments.forEach((seg) => {
         const angle = 2 * Math.PI * seg.prob;
         
-        const grad = ctx.createRadialGradient(centerX*0.95, centerY*0.95, radius*0.3, centerX, centerY, radius);
+        const grad = ctx.createRadialGradient(center*0.95, center*0.95, radius*0.3, center, center, radius);
         grad.addColorStop(0, seg.color);
         grad.addColorStop(1, '#111');
 
         ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + angle);
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, startAngle, startAngle + angle);
         ctx.closePath();
         ctx.fillStyle = grad;
         ctx.fill();
 
         ctx.strokeStyle = '#ffffff44';
-        ctx.lineWidth = 8;
+        ctx.lineWidth = size > 400 ? 8 : 6;
         ctx.stroke();
 
         startAngle += angle;
@@ -116,21 +121,22 @@
 
       // Centro
       ctx.beginPath();
-      ctx.arc(centerX, centerY, 38, 0, Math.PI * 2);
+      ctx.arc(center, center, size > 400 ? 38 : 28, 0, Math.PI * 2);
       ctx.fillStyle = '#111';
       ctx.fill();
       ctx.strokeStyle = '#ddd';
-      ctx.lineWidth = 10;
+      ctx.lineWidth = size > 400 ? 10 : 7;
       ctx.stroke();
 
       // Flecha
+      const arrowSize = size > 400 ? 32 : 24;
       ctx.fillStyle = '#ffffff';
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 6;
+      ctx.lineWidth = size > 400 ? 6 : 4;
       ctx.beginPath();
-      ctx.moveTo(centerX - 32, 80);
-      ctx.lineTo(centerX + 32, 80);
-      ctx.lineTo(centerX, 25);
+      ctx.moveTo(center - arrowSize, 70);
+      ctx.lineTo(center + arrowSize, 70);
+      ctx.lineTo(center, 22);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
@@ -162,10 +168,11 @@
       requestAnimationFrame(animate);
     }
 
-    // Inicializar
+    // Eventos
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    drawWheel();
+    window.addEventListener('load', () => {
+      resizeCanvas();
+    });
   </script>
 </body>
 </html>
