@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Ruleta</title>
   <style>
     body {
@@ -11,55 +11,68 @@
       background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
       color: white;
       margin: 0;
-      padding: 20px;
+      padding: 15px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     h1 {
-      font-size: 2.8em;
-      margin-bottom: 30px;
+      font-size: 2.2em;
+      margin: 10px 0 20px;
       text-shadow: 0 0 20px rgba(255,255,255,0.4);
     }
+    .container {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+    }
     canvas {
-      border: 15px solid #ffffff22;
+      width: 100%;
+      height: auto;
+      max-width: 520px;
+      border: 12px solid #ffffff22;
       border-radius: 50%;
-      box-shadow: 0 0 60px rgba(0,0,0,0.7),
-                  inset 0 0 50px rgba(255,255,255,0.15);
+      box-shadow: 0 0 50px rgba(0,0,0,0.7),
+                  inset 0 0 40px rgba(255,255,255,0.15);
       background: #000;
+      touch-action: none;
     }
     button {
-      margin-top: 40px;
-      padding: 18px 60px;
-      font-size: 28px;
+      margin-top: 30px;
+      padding: 18px 50px;
+      font-size: 1.8rem;
       font-weight: bold;
       background: linear-gradient(45deg, #ff3366, #ff6699);
       color: white;
       border: none;
       border-radius: 50px;
       cursor: pointer;
-      box-shadow: 0 10px 35px rgba(255, 51, 102, 0.5);
-      transition: all 0.3s;
+      box-shadow: 0 8px 25px rgba(255, 51, 102, 0.5);
+      width: 90%;
+      max-width: 320px;
     }
-    button:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 15px 45px rgba(255, 51, 102, 0.7);
+    button:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
 <body>
-  <h1>🎡 Ruleta</h1>
-  <canvas id="wheel" width="560" height="560"></canvas>
-  <button onclick="spin()">¡GIRAR!</button>
+  <div class="container">
+    <h1>🎡 Ruleta</h1>
+    <canvas id="wheel" width="520" height="520"></canvas>
+    <button onclick="spin()">¡GIRAR!</button>
+  </div>
 
   <script>
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
-    const centerX = 280;
-    const centerY = 280;
-    const radius = 250;
+    let size = 520;
+    let centerX = size / 2;
+    let centerY = size / 2;
+    let radius = size / 2 - 20;
 
     const segments = [
       { color: '#22c55e', prob: 0.45 },   // Verde 45%
@@ -69,6 +82,12 @@
 
     let rotation = 0;
     let isSpinning = false;
+
+    function resizeCanvas() {
+      const containerWidth = Math.min(window.innerWidth * 0.92, 520);
+      canvas.style.width = containerWidth + 'px';
+      canvas.style.height = containerWidth + 'px';
+    }
 
     function drawWheel() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -97,7 +116,7 @@
 
       // Centro
       ctx.beginPath();
-      ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, 38, 0, Math.PI * 2);
       ctx.fillStyle = '#111';
       ctx.fill();
       ctx.strokeStyle = '#ddd';
@@ -109,9 +128,9 @@
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.moveTo(centerX - 30, 75);
-      ctx.lineTo(centerX + 30, 75);
-      ctx.lineTo(centerX, 20);
+      ctx.moveTo(centerX - 32, 80);
+      ctx.lineTo(centerX + 32, 80);
+      ctx.lineTo(centerX, 25);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
@@ -121,8 +140,8 @@
       if (isSpinning) return;
       isSpinning = true;
 
-      const spinTime = 5000 + Math.random() * 2000;
-      const totalRot = rotation + (Math.random() * 5 + 10) * Math.PI;
+      const spinTime = 4800 + Math.random() * 2200;
+      const totalRot = rotation + (Math.random() * 5 + 9) * Math.PI;
 
       let start = null;
 
@@ -143,6 +162,9 @@
       requestAnimationFrame(animate);
     }
 
+    // Inicializar
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
     drawWheel();
   </script>
 </body>
